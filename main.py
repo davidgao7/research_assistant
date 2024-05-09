@@ -228,18 +228,18 @@ if __name__ == "__main__":
         | StrOutputParser()
     )
 
-    chain.invoke({"question": "how's the job market looking in 2024 in US?"})
+    # chain.invoke({"question": "how's the job market looking in 2024 in US?"})
 
-    # app = FastAPI(
-    #     title="LangChain Server",
-    #     version="1.0",
-    #     description="A simple api server using Langchain's Runnable interfaces",
-    # )
-    #
-    # add_routes(
-    #     app,
-    #     chain,
-    #     path="/research-assistant",  # localhost:8001/research-assistant/playground
-    # )
-    #
-    # uvicorn.run(app, host="localhost", port=8000)
+    app = FastAPI(
+        title="LangChain Server",
+        version="1.0",
+        description="A simple api server using Langchain's Runnable interfaces",
+    )
+
+    add_routes(
+        app,
+        chain,
+        path="/research-assistant",  # localhost:8001/research-assistant/playground
+    )
+
+    uvicorn.run(app, host="localhost", port=8000)
