@@ -113,16 +113,21 @@ if __name__ == "__main__":
     # scrap it, pass into the llm
     # 2. prompt: ask a question
     # 3. chat: answer the question to str
-    scrape_and_summarize_chain = (
-        RunnablePassthrough.assign(
+    scrape_and_summarize_chain = RunnablePassthrough.assign(
+        summary=RunnablePassthrough.assign(
             # x:{'question': 'What is the best way to get started with langchain?', 'url': 'https://www.pluralsight.com/resources/blog/data/getting-started-langchain'}
             text=lambda x: scrape_text(x["url"])[
                 :10000
             ]  # This will trigger scaping, more automated
         )  # take current input and pass into it, for this task we do web scraping
+        | SUMMARY_PROMPT
         | ChatOpenAI(model="gpt-3.5-turbo-1106")
         | StrOutputParser()
-    )
+        # summary each element in the list
+    ) | (
+        # put each url and summary into a 2d list
+        lambda x: f"URL: {x['url']}\n\nSUMMARY: {x['summary']}"
+    )  # add the url to the summary
 
     # return the actual web search result
     web_search_chain = (
