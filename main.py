@@ -7,11 +7,12 @@ from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(find_dotenv())
 # now the enviroment variables have all keys
-# print(os.getenv("OPENAI_API_KEY"))
 
 import requests
 from bs4 import BeautifulSoup
-from langchain_community.chat_models import ChatOpenAI
+
+# from langchain_community.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 
 # parse response to str
@@ -28,7 +29,7 @@ from langchain_community.utilities import DuckDuckGoSearchAPIWrapper
 ddgo_search_wrapper = DuckDuckGoSearchAPIWrapper()
 
 # number of results per question for web search scrapping
-RESULT_PER_QUESTION = 5
+RESULT_PER_QUESTION = 1
 
 
 # make a helper function to scrape the page
@@ -59,10 +60,14 @@ def search_web(query: str, result_per_question: int):
     """
     query: keywords to search for
     result_per_question: number of results to return per question
+
+    @return: list of links
     """
+    # print(f"query: {query}")
     # search the web for the query
     search_results = ddgo_search_wrapper.results(query, max_results=result_per_question)
-    return search_results
+
+    return [r["link"] for r in search_results]
 
 
 if __name__ == "__main__":
@@ -70,7 +75,7 @@ if __name__ == "__main__":
     # exit(0)
 
     # 1. get the web you want to question on
-    url = "https://docs.smith.langchain.com/how_to_guides"
+    # url = "https://docs.smith.langchain.com/how_to_guides"
     # page_content = scrape_text(url)[:10000]
     # print(page_content)
 
@@ -94,11 +99,13 @@ if __name__ == "__main__":
     # 3. create the chat chain
     # chain includes:
     # 0. passthrough: take the current input and pass into the chain
-    # 1. search: look up and retrieve information
+    # 1. search: look up and retrieve information from duckduckgo, get most relevant 3,
+    # scrap it, pass into the llm
     # 2. prompt: ask a question
     # 3. chat: answer the question to str
-    chain = (
+    scrape_and_summarize_chain = (
         RunnablePassthrough.assign(
+            # x:{'question': 'What is the best way to get started with langchain?', 'url': 'https://www.pluralsight.com/resources/blog/data/getting-started-langchain'}
             text=lambda x: scrape_text(x["url"])[
                 :10000
             ]  # This will trigger scaping, more automated
@@ -108,7 +115,26 @@ if __name__ == "__main__":
         | StrOutputParser()
     )
 
+    final_chain = (
+        # 1. get relevant urls
+        RunnablePassthrough.assign(
+            # return a number of list of urls
+            # add a new key called url
+            urls=lambda chain_params: search_web(
+                chain_params["question"], RESULT_PER_QUESTION
+            )
+            # next stept turn urls dict to a list of urls
+        )
+        | (
+            lambda chain_params: [
+                {"question": chain_params["question"], "url": u}
+                for u in chain_params["urls"]
+            ]
+        )  # 2. scrape urls
+        | scrape_and_summarize_chain.map()  # 3. apply every element in the list
+    )  # "map": apply the chain to every element in the list
+
     # 4. execute the chain
-    chain.invoke(
-        {"question": "What is the best way to get started with langchain?", "url": url}
+    final_chain.invoke(
+        {"question": "What is the best way to get started with langchain?"}
     )
