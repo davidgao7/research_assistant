@@ -24,6 +24,9 @@ from langchain_core.runnables.base import RunnableLambda
 # web search api
 from langchain_community.utilities import DuckDuckGoSearchAPIWrapper
 
+# capture the response from the api as json
+import json
+
 # from langchain.utilities import DuckDuckGoSearchAPIWrapper
 
 ddgo_search_wrapper = DuckDuckGoSearchAPIWrapper()
@@ -115,7 +118,8 @@ if __name__ == "__main__":
         | StrOutputParser()
     )
 
-    final_chain = (
+    # return the actual web search result
+    web_search_chain = (
         # 1. get relevant urls
         RunnablePassthrough.assign(
             # return a number of list of urls
@@ -134,7 +138,40 @@ if __name__ == "__main__":
         | scrape_and_summarize_chain.map()  # 3. apply every element in the list
     )  # "map": apply the chain to every element in the list
 
+    # 3. tune the search prompt
+    SEARCH_PROMPT = ChatPromptTemplate.from_messages(
+        [
+            (
+                "user",
+                "Write 3 google search queries to search online that form an "
+                "objective opinion from the following: {question}\n"
+                "You must respond with a list of strings in the following format: "
+                '["query 1", "query 2", "query 3"].',
+            ),
+        ]
+    )
+
+    # return list of questions
+    search_question_chain = (
+        SEARCH_PROMPT | ChatOpenAI() | StrOutputParser() | json.loads
+    )
+    # search_question_chain.invoke(
+    #     {"question": "what is the difference between langsmith and langchain?"}
+    # )
+    # web_search_chain.invoke(
+    #     {"question": "What is the best way to get started with langchain?"}
+    # )
+
     # 4. execute the chain
-    final_chain.invoke(
-        {"question": "What is the best way to get started with langchain?"}
+    # map the question list to dict so that the web_search_chain can parse
+    chain = (
+        search_question_chain
+        | (
+            lambda x: [{"question": q} for q in x]
+        )  # take the pervious chain output(list), put in a list of dict
+        | web_search_chain.map()  # run each element in the list
+    )
+
+    chain.invoke(
+        {"question": "what is the difference between langsmith and langchain?"}
     )
