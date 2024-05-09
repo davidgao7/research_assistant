@@ -73,6 +73,13 @@ def search_web(query: str, result_per_question: int):
     return [r["link"] for r in search_results]
 
 
+def flatten_2dlistofstr_2str(list_of_list):
+    content = []
+    for l in list_of_list:
+        content.append("\n\n".join(l))
+    return "\n\n".join(content)
+
+
 if __name__ == "__main__":
     # print("Welcome to the research agent")
     # exit(0)
@@ -113,7 +120,6 @@ if __name__ == "__main__":
                 :10000
             ]  # This will trigger scaping, more automated
         )  # take current input and pass into it, for this task we do web scraping
-        | SUMMARY_PROMPT
         | ChatOpenAI(model="gpt-3.5-turbo-1106")
         | StrOutputParser()
     )
@@ -152,24 +158,59 @@ if __name__ == "__main__":
     )
 
     # return list of questions
+    # temperature is the randomness of the response
     search_question_chain = (
-        SEARCH_PROMPT | ChatOpenAI() | StrOutputParser() | json.loads
+        SEARCH_PROMPT | ChatOpenAI(temperature=0) | StrOutputParser() | json.loads
     )
-    # search_question_chain.invoke(
-    #     {"question": "what is the difference between langsmith and langchain?"}
-    # )
-    # web_search_chain.invoke(
-    #     {"question": "What is the best way to get started with langchain?"}
-    # )
 
     # 4. execute the chain
     # map the question list to dict so that the web_search_chain can parse
-    chain = (
+    full_research_chain = (
         search_question_chain
         | (
             lambda x: [{"question": q} for q in x]
         )  # take the pervious chain output(list), put in a list of dict
         | web_search_chain.map()  # run each element in the list
+    )
+
+    # 5. we get the knowledge, now we need to write a report
+    WRITER_SYSTEM_PROMPT = """
+    You are an AI critical thinker research assistant. Your sole purpose 
+    is to write well written, critically acclaimed, objective and structured reports on given text.
+    """
+
+    # NOTE: research prompt templates: https://github.com/assafelovic/gpt-researcher/blob/master/gpt_researcher/master/prompts.py line 8 at def generate_report_prompt
+    REARCH_PROMPT = """Information:
+    ----------------
+    {research_summary}
+    ----------------
+
+
+    Using the above information, answer the following question or topic: "{question}" in a detailed report --
+    The report should focus on the answer to the query, should be well structured, informative,
+    in depth and comprehensive, with facts and numbers if available and a minimum of 1,200 words.
+
+    You should strive to write the report as long as you can using all relevant and necessary information provided.
+    You must write the report with markdown syntax.
+    You MUST determine your own concrete and valid opinion based on the given information. Do NOT deter to general and meaningless conclusions.
+    You MUST write all used source urls at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each.
+    You MUST write the report in APA format.
+    Please do your best, this is very important to my career.
+    """
+
+    prompt = ChatPromptTemplate.from_messages(
+        [("system", WRITER_SYSTEM_PROMPT), ("user", REARCH_PROMPT)]
+    )
+
+    # full_research_chain will return list of list(2d list of knowledge per question)
+    # we need to conver the lists into a str
+    chain = (
+        RunnablePassthrough.assign(
+            research_summary=full_research_chain | flatten_2dlistofstr_2str
+        )
+        | prompt
+        | ChatOpenAI(model="gpt-3.5-turbo-1106")
+        | StrOutputParser()
     )
 
     chain.invoke(
