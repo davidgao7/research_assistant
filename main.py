@@ -22,17 +22,25 @@ from langchain_core.runnables.passthrough import RunnablePassthrough
 from langchain_core.runnables.base import RunnableLambda
 
 # web search api
-from langchain_community.utilities import DuckDuckGoSearchAPIWrapper
+# error always appear rate limit
+from langchain_community.utilities import GoogleSerperAPIWrapper
 
 # capture the response from the api as json
 import json
 
-# from langchain.utilities import DuckDuckGoSearchAPIWrapper
+# from langchain_community.utilities import DuckDuckGoSearchAPIWrapper
+from langchain.agents import Tool
 
-ddgo_search_wrapper = DuckDuckGoSearchAPIWrapper()
+# streamlit like interface: langserve
+from fastapi import FastAPI
+from langserve import add_routes
+import uvicorn
+
+
+serper_searchwrapper = GoogleSerperAPIWrapper()
 
 # number of results per question for web search scrapping
-RESULT_PER_QUESTION = 1
+RESULT_PER_QUESTION = 3
 
 
 # make a helper function to scrape the page
@@ -68,9 +76,11 @@ def search_web(query: str, result_per_question: int):
     """
     # print(f"query: {query}")
     # search the web for the query
-    search_results = ddgo_search_wrapper.results(query, max_results=result_per_question)
+    search_results = serper_searchwrapper.results(query)  # , result_per_question)
+    search_results = search_results["organic"][:result_per_question]
+    search_results = [result["link"] for result in search_results]
 
-    return [r["link"] for r in search_results]
+    return search_results
 
 
 def flatten_2dlistofstr_2str(list_of_list):
@@ -218,6 +228,18 @@ if __name__ == "__main__":
         | StrOutputParser()
     )
 
-    chain.invoke(
-        {"question": "what is the difference between langsmith and langchain?"}
-    )
+    chain.invoke({"question": "how's the job market looking in 2024 in US?"})
+
+    # app = FastAPI(
+    #     title="LangChain Server",
+    #     version="1.0",
+    #     description="A simple api server using Langchain's Runnable interfaces",
+    # )
+    #
+    # add_routes(
+    #     app,
+    #     chain,
+    #     path="/research-assistant",  # localhost:8001/research-assistant/playground
+    # )
+    #
+    # uvicorn.run(app, host="localhost", port=8000)
