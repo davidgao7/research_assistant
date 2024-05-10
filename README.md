@@ -5,4 +5,3 @@
 3. Run `python main.py`
 4. Chat with your assistant!
 
-# TODO: make a public web app
