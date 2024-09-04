@@ -242,4 +242,8 @@ if __name__ == "__main__":
         path="/research-assistant",  # localhost:8001/research-assistant/playground
     )
 
-    uvicorn.run(app, host="localhost", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8888)
+
+    # run service: docker run -it -p 8888:8888 [image_id]
+    # access service: your ip address/research-assistant/playground
+    # if using google cloud, you need to auth before push: gcloud auth configure-docker [region]-docker.pkg.dev
