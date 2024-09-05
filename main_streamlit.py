@@ -2,12 +2,6 @@
 build a research agent from scratch using lanchain
 """
 
-# import keys from env
-from dotenv import load_dotenv, find_dotenv
-
-load_dotenv(find_dotenv())
-# now the enviroment variables have all keys
-
 from langchain_core.runnables.history import RunnableWithMessageHistory
 import requests
 from bs4 import BeautifulSoup
@@ -20,7 +14,6 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers.string import StrOutputParser
 
 from langchain_core.runnables.passthrough import RunnablePassthrough
-from langchain_core.runnables.base import RunnableLambda
 
 # web search api
 # error always appear rate limit
