@@ -40,11 +40,11 @@ import os, time
 
 key1 = st.text_input("Enter your OpenAI API key", type="password")
 
-    if key1:
-        os.environ["OPENAI_API_KEY"] = key1
-        st.write("API key set successfully!")
-    else:
-        st.stop()
+if key1:
+    os.environ["OPENAI_API_KEY"] = key1
+    st.write("API key set successfully!")
+else:
+    st.stop()
 
 
 key2 = st.text_input("Enter your GoogleSerperAPIWrapper API key", type="password")
