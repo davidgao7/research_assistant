@@ -17,8 +17,6 @@ from langchain_core.runnables.passthrough import RunnablePassthrough
 
 # web search api
 # error always appear rate limit
-from langchain_community.utilities import GoogleSerperAPIWrapper
-
 # chat memory
 from langchain_community.chat_message_histories import (
     ChatMessageHistory,
@@ -39,6 +37,17 @@ from audiorecorder import audiorecorder
 
 import streamlit as st
 import os, time
+
+key = st.text_input("Enter your GoogleSerperAPIWrapper API key", type="password")
+
+if key:
+    os.environ["SERPER_API_KEY"] = key
+    st.write("API key set successfully!")
+else:
+    st.stop()
+
+from langchain_community.utilities import GoogleSerperAPIWrapper
+
 
 # async TTS while output the response
 # import asyncio
