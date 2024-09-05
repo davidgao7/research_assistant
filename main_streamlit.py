@@ -38,10 +38,19 @@ from audiorecorder import audiorecorder
 import streamlit as st
 import os, time
 
-key = st.text_input("Enter your GoogleSerperAPIWrapper API key", type="password")
+key1 = st.text_input("Enter your OpenAI API key", type="password")
 
-if key:
-    os.environ["SERPER_API_KEY"] = key
+    if key1:
+        os.environ["OPENAI_API_KEY"] = key1
+        st.write("API key set successfully!")
+    else:
+        st.stop()
+
+
+key2 = st.text_input("Enter your GoogleSerperAPIWrapper API key", type="password")
+
+if key2:
+    os.environ["SERPER_API_KEY"] = key2
     st.write("API key set successfully!")
 else:
     st.stop()
@@ -293,14 +302,6 @@ def stream_to_speakers(text: str) -> None:
 
 
 def main():
-    key = st.text_input("Enter your OpenAI API key", type="password")
-
-    if key:
-        os.environ["OPENAI_API_KEY"] = key
-        st.write("API key set successfully!")
-    else:
-        st.stop()
-
     st.title("Hello, I am a Research Assistant 🤖📚")
     st.subheader(
         "Ask me any question by recording your question or type into the chat box, and I will help you find the answer! 🤓"
