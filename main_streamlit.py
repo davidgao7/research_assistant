@@ -330,7 +330,7 @@ def main():
     #     question = st.chat_input("what do you want to know about museum?")
     #     st.session_state.messages.append({"role": "user", "content": question})
     #
-    question = st.chat_input("what do you want to know about museum?")
+    question = st.chat_input("What do you want to ask me? 🧐")
     st.session_state.messages.append({"role": "user", "content": question})
 
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
