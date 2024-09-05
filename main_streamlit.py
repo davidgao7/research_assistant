@@ -33,7 +33,7 @@ import openai
 from openai import OpenAI
 
 # TTS, STT
-from audiorecorder import audiorecorder
+# from audiorecorder import audiorecorder
 
 import streamlit as st
 import os, time
@@ -280,31 +280,31 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 
-def stream_to_speakers(text: str) -> None:
-    """
-    give response to the user's input in audio
-
-    @param text: text to be converted to audio
-    """
-
-    start_time = time.time()
-
-    with openai.audio.speech.with_streaming_response.create(
-        model="tts-1",
-        voice="alloy",
-        response_format="mp3",
-        input=text,
-    ) as response:
-        print("saving response audio file  ...")
-        response.stream_to_file("response.mp3")
-
-    print(f"Done in {int((time.time() - start_time) * 1000)}ms.")
+# def stream_to_speakers(text: str) -> None:
+#     """
+#     give response to the user's input in audio
+#
+#     @param text: text to be converted to audio
+#     """
+#
+#     start_time = time.time()
+#
+#     with openai.audio.speech.with_streaming_response.create(
+#         model="tts-1",
+#         voice="alloy",
+#         response_format="mp3",
+#         input=text,
+#     ) as response:
+#         print("saving response audio file  ...")
+#         response.stream_to_file("response.mp3")
+#
+#     print(f"Done in {int((time.time() - start_time) * 1000)}ms.")
 
 
 def main():
     st.title("Hello, I am a Research Assistant 🤖📚")
     st.subheader(
-        "Ask me any question by recording your question or type into the chat box, and I will help you find the answer! 🤓"
+        "Ask me any question by typing into the chat box, and I will help you find the answer! 🤓"
     )
 
     if "messages" not in st.session_state:
@@ -312,23 +312,26 @@ def main():
 
     # text input and audio input for question
     # audio record
-    audio_col, text_input_col = st.columns(2)
+    # audio_col, text_input_col = st.columns(2)
     question = None
 
-    with audio_col:
-        audio = audiorecorder("Click to record", "Click to stop recording")
-        # translate user audio to text question
-        if len(audio) > 0:
-            # To play audio in frontend:
-            st.audio(audio.export().read())
+    # with audio_col:
+    #     audio = audiorecorder("Click to record", "Click to stop recording")
+    #     # translate user audio to text question
+    #     if len(audio) > 0:
+    #         # To play audio in frontend:
+    #         st.audio(audio.export().read())
+    #
+    #         # To save audio to a file, use pydub export method:
+    #         audio.export("user_response.mp3", format="mp3")
 
-            # To save audio to a file, use pydub export method:
-            audio.export("user_response.mp3", format="mp3")
-
-    with text_input_col:
-        # question = st.chat_input("any questions on museum?")  # interact with openai
-        question = st.chat_input("what do you want to know about museum?")
-        st.session_state.messages.append({"role": "user", "content": question})
+    # with text_input_col:
+    #     # question = st.chat_input("any questions on museum?")  # interact with openai
+    #     question = st.chat_input("what do you want to know about museum?")
+    #     st.session_state.messages.append({"role": "user", "content": question})
+    #
+    question = st.chat_input("what do you want to know about museum?")
+    st.session_state.messages.append({"role": "user", "content": question})
 
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
     print("question: ", question)
@@ -389,7 +392,7 @@ def main():
             # tts_task = asyncio.create_task(stream_to_speakers(ai_response))
             # await tts_task
 
-            st.audio("response.mp3", format="audio/mp3", autoplay=True)
+            # st.audio("response.mp3", format="audio/mp3", autoplay=True)
 
     # display chat history
     st.session_state.messages = list(
