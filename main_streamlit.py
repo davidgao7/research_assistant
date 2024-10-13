@@ -43,8 +43,6 @@ key1 = st.text_input("Enter your OpenAI API key", type="password")
 if key1:
     os.environ["OPENAI_API_KEY"] = key1
     st.write("API key set successfully!")
-else:
-    st.stop()
 
 
 key2 = st.text_input("Enter your GoogleSerperAPIWrapper API key", type="password")
@@ -303,6 +301,7 @@ if "messages" not in st.session_state:
 
 def main():
     st.title("Hello, I am a Research Assistant 🤖📚")
+    st.image("research_assistant_pic.webp")
     st.subheader(
         "Ask me any question by typing into the chat box, and I will help you find the answer! 🤓"
     )
