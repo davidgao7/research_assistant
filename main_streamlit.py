@@ -186,7 +186,16 @@ SEARCH_PROMPT = ChatPromptTemplate.from_messages(
 # return list of questions
 # temperature is the randomness of the response
 search_question_chain = (
-    SEARCH_PROMPT | ChatOpenAI(temperature=0) | StrOutputParser() | json.loads
+    SEARCH_PROMPT | ChatOpenAI(
+    model="gpt-4o",
+    temperature=0,
+    client_kwargs={
+        "proxies": {
+            "http": "http://username:password@proxyserver:port",
+            "https": "http://username:password@proxyserver:port",
+        }
+    }
+) | StrOutputParser() | json.loads
 )
 
 # 4. execute the chain
@@ -236,8 +245,16 @@ chain = (
         research_summary=full_research_chain | flatten_2dlistofstr_2str
     )
     | prompt
-    | ChatOpenAI(model="gpt-4o-mini")
-    | StrOutputParser()
+    | ChatOpenAI(
+    model="gpt-4o",
+    temperature=0,
+    client_kwargs={
+        "proxies": {
+            "http": "http://username:password@proxyserver:port",
+            "https": "http://username:password@proxyserver:port",
+        }
+    }
+) | StrOutputParser()
 )
 
 # add streamlit chabot history
