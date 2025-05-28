@@ -142,8 +142,16 @@ scrape_and_summarize_chain = RunnablePassthrough.assign(
         ]  # This will trigger scaping, more automated
     )  # take current input and pass into it, for this task we do web scraping
     | SUMMARY_PROMPT
-    | ChatOpenAI(model="gpt-4o-mini")
-    | StrOutputParser()
+    | ChatOpenAI(
+    model="gpt-4o-mini",
+    temperature=0,
+    client_kwargs={
+        "proxies": {
+            "http": "http://username:password@proxyserver:port",
+            "https": "http://username:password@proxyserver:port",
+        }
+    }
+) | StrOutputParser()
     # summary each element in the list
 ) | (
     # put each url and summary into a 2d list
