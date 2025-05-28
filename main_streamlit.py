@@ -145,12 +145,7 @@ scrape_and_summarize_chain = RunnablePassthrough.assign(
     | ChatOpenAI(
     model="gpt-4o-mini",
     temperature=0,
-    client_kwargs={
-        "proxies": {
-            "http": "http://username:password@proxyserver:port",
-            "https": "http://username:password@proxyserver:port",
-        }
-    }
+    openai_proxy="http://username:password@proxy.server:port",
 ) | StrOutputParser()
     # summary each element in the list
 ) | (
